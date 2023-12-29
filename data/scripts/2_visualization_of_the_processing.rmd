@@ -1,0 +1,391 @@
+---
+title: "SNPs data preprocessing"
+author: "Shuai, Yi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Add required packages
+  library(ggplot2)
+  library(tidyverse)
+  library(hrbrthemes)
+  library("stringr")
+  library(ComplexHeatmap)
+  library(vcfR)
+  library("readxl")
+```
+
+```{r}
+  clin_info = read_xlsx("../arrhythmia_clinical_info_1229.xlsx")
+  snp.table.pre = readRDS(file = "./data_analysis/1_wes_allsamples_n50.rds") # The final rds file from scripts 1.
+  # clin_info$ID
+  # unique(snp.table.pre$Patient_id)
+```
+
+#----------------------------------------------------
+# 1. Stats of raw table from jjy
+#----------------------------------------------------
+
+
+The snp talbe has already been filtered by JJY and the sequencing company.
+They have removed most of the mutations that won't affect the protein structure.
+Let start our analysis with some basic checking and visualizations
+
+```{r}
+  # dim(snp.table.pre) # 64,814
+  # colnames(snp.table.pre)
+  table(snp.table.pre$Func,snp.table.pre$ExonicFunc)
+  table(snp.table.pre$Func)
+  table(snp.table.pre$ExonicFunc)
+```
+
+```{r fig.height=4, fig.width=5}
+# Subset the SNPs whose Func is exonic
+  snp.table.pre$ExonicFunc[which(snp.table.pre$ExonicFunc == "nonsynonymous SNV")] = "missense SNV"
+  table(snp.table.pre$ExonicFunc)
+  snp.table.exonic = snp.table.pre[-which(snp.table.pre$ExonicFunc == "." |
+                                          snp.table.pre$ExonicFunc == "unknown"|
+                                          snp.table.pre$ExonicFunc == "nonframeshift deletion"|
+                                          snp.table.pre$ExonicFunc == "nonframeshift insertion"|
+                                          snp.table.pre$ExonicFunc == "synonymous SNV" ),] #  44,132
+  dim(snp.table.exonic)[1] - dim(snp.table.pre)[1] # 20,682
+  df = data.frame(sort(table(snp.table.exonic$ExonicFunc),decreasing = T))
+  sort(table(snp.table.exonic$ExonicFunc),decreasing = T)
+  # missense SNV             stopgain  frameshift deletion frameshift insertion             stoploss             splicing 
+  #        40625                 1515                 1121                  824                   33                    6 
+  p =
+    ggplot(df, aes(x = Var1, y = Freq)) +
+    geom_bar(stat = "identity", fill = "steelblue") +
+    xlab("") +
+    ylab("Counts") +
+    ggtitle("") + theme_classic() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  p
+  ggsave(plot = p, filename = "./image/sfig1/1_barplot_of_exonic_var.pdf", width = 5, height = 3)
+```
+
+#----------------------------------------------------
+# 2. consensus prediction results
+#----------------------------------------------------
+
+```{r fig.height=4, fig.width=5}
+# The predicted deleterious of those 44,132 variants.
+  split_vector <- strsplit(snp.table.exonic$SIFT, ",")
+  # score
+  split_vector1 <- lapply(split_vector, function(element) {
+  if (length(element) == 1) {
+    element
+  } else {
+    element[1]
+  }
+    })
+  SIFT_score <- sapply(split_vector1, paste, collapse = ",")
+  # predicts D deleterious, T tolerated
+  split_vector2 <- lapply(split_vector, function(element) {
+  if (length(element) == 1) {
+    element
+  } else {
+    element[[2]]
+  }
+    })
+  SIFT_pred <- sapply(split_vector2, paste, collapse = ",")
+  
+  snp.table.exonic$SIFT_score = SIFT_score
+  snp.table.exonic$SIFT_pred = SIFT_pred
+```
+
+```{r fig.height=4, fig.width=5}
+# The predicted deleterious of those 44,132 variants.
+  split_vector <- strsplit(snp.table.exonic$Polyphen2_HVAR, ",")
+  # score
+  split_vector1 <- lapply(split_vector, function(element) {
+  if (length(element) == 1) {
+    element
+  } else {
+    element[1]
+  }
+    })
+  Polyphen2_HVAR_score <- sapply(split_vector1, paste, collapse = ",")
+  # predicts D deleterious, T tolerated
+  split_vector2 <- lapply(split_vector, function(element) {
+  if (length(element) == 1) {
+    element
+  } else {
+    element[[2]]
+  }
+    })
+  Polyphen2_HVAR_pred <- sapply(split_vector2, paste, collapse = ",")
+  table(Polyphen2_HVAR_pred)
+  #    .     B     D     P 
+  # 6296 18864 11199  7773 
+  
+  snp.table.exonic$Polyphen2_HVAR_score = Polyphen2_HVAR_score
+  snp.table.exonic$Polyphen2_HVAR_pred = Polyphen2_HVAR_pred
+```
+
+```{r fig.height=4, fig.width=5}
+# The predicted deleterious of those 44,132 variants.
+  split_vector <- strsplit(snp.table.exonic$Polyphen2_HDIV, ",")
+  # score
+  split_vector1 <- lapply(split_vector, function(element) {
+  if (length(element) == 1) {
+    element
+  } else {
+    element[1]
+  }
+    })
+  Polyphen2_HDIV_score <- sapply(split_vector1, paste, collapse = ",")
+  # predicts D deleterious, T tolerated
+  split_vector2 <- lapply(split_vector, function(element) {
+  if (length(element) == 1) {
+    element
+  } else {
+    element[[2]]
+  }
+    })
+  Polyphen2_HDIV_pred <- sapply(split_vector2, paste, collapse = ",")
+  table(Polyphen2_HDIV_pred)
+  #    .     B     D     P 
+  # 6296 13407 16398  8031 
+  
+  snp.table.exonic$Polyphen2_HDIV_score = Polyphen2_HDIV_score
+  snp.table.exonic$Polyphen2_HDIV_pred = Polyphen2_HDIV_pred
+```
+
+```{r fig.height=4, fig.width=5}
+# The predicted deleterious of those 44,132 variants.
+  split_vector <- strsplit(snp.table.exonic$MutationTaster, ",")
+  # score
+  split_vector1 <- lapply(split_vector, function(element) {
+  if (length(element) == 1) {
+    element
+  } else {
+    element[1]
+  }
+    })
+  MutationTaster_score <- sapply(split_vector1, paste, collapse = ",")
+  # predicts D deleterious, T tolerated
+  split_vector2 <- lapply(split_vector, function(element) {
+  if (length(element) == 1) {
+    element
+  } else {
+    element[[2]]
+  }
+    })
+  MutationTaster_pred <- sapply(split_vector2, paste, collapse = ",")
+  table(MutationTaster_pred)
+  #    .     A     D     N     P 
+  # 4253   878 20609 12931  5461 
+  
+  snp.table.exonic$MutationTaster_score = MutationTaster_score
+  snp.table.exonic$MutationTaster_pred = MutationTaster_pred
+```
+
+```{r fig.height=4, fig.width=5}
+# The predicted deleterious of those 44,132 variants.
+  split_vector <- strsplit(snp.table.exonic$CADD, ",")
+  # score
+  split_vector1 <- lapply(split_vector, function(element) {
+  if (length(element) == 1) {
+    element
+  } else {
+    element[1]
+  }
+    })
+  CADD_score <- sapply(split_vector1, paste, collapse = ",")
+  # predicts D deleterious, T tolerated
+  split_vector2 <- lapply(split_vector, function(element) {
+  if (length(element) == 1) {
+    element
+  } else {
+    element[[2]]
+  }
+    })
+  CADD_pred <- sapply(split_vector2, paste, collapse = ",")
+  
+  snp.table.exonic$CADD_score = CADD_score
+  snp.table.exonic$CADD_pred = CADD_pred
+```
+
+```{r}
+  saveRDS(snp.table.exonic, file = "./data_analysis/2_wes_allsamples_anno.rds")
+```
+
+#----------------------------------------
+# 3. filtration based on pred results
+#----------------------------------------
+
+```{r}
+# The final variants table included in the study.
+  snp.table.exonic = readRDS(file = "./data_analysis/2_wes_allsamples_anno.rds")
+  # snp.table.exonic = snp.table.exonic[-which(is.na(snp.table.exonic$ExonicFunc) == TRUE),]
+  # saveRDS(snp.table.exonic, file = "./data_analysis/2_wes_allsamples_anno.rds")
+  # table(snp.table.exonic$ExonicFunc)
+  # frameshift deletion; frameshift insertion; missense SNV; splicing; stopgain; stoploss 
+  #                1121;                  824;        40625;        6;     1515;       33
+  # 1121+824        # 1945
+  # 40625+6+1515+33 # 42,179
+```
+
+```{r}
+# 1. SIFT score predicts whether an amino acid substitution affects protein function.
+#    The SIFT score ranges from 0.0 (deleterious) to 1.0 (tolerated).
+#    0.0 to 0.05 -- Variants with scores in this range are considered deleterious.
+#    0.05 to 1.0 -- Variants with scores in this range are predicted to be tolerated (benign).
+    
+# 2. Polyphen2 score is reverse to the SIFT socre.
+
+# 3. MutationTaster (MT) score is the probability that the prediction is true:
+# Scores below 0.5 hence indicate, MT classifier comes to a different conclusion. 
+# D: disease causing - i.e. probably deleterious
+# A: disease causing automatic - i.e. known to be deleterious, see section dbSNP / TGP / ClinVar / HGMD for details
+# N: polymorphism - i.e. probably harmless
+# P: polymorphism automatic - i.e. known to be harmless, see section dbSNP / TGP / ClinVar / HGMD for details.
+
+# 4. CADD predicts a continuous phred-like score that ranges from 1 to 99, higher values indicating more deleterious cases.
+
+ # The distribution of SIFT scores
+   SIFT_score = snp.table.exonic$SIFT_score
+   SIFT_score[which(SIFT_score == ".")] = 0
+   SIFT_score = as.numeric(SIFT_score)
+
+   
+ # The distribution of Polyphen2 scores
+   Polyphen2_HVAR_score = snp.table.exonic$Polyphen2_HVAR_score
+   Polyphen2_HVAR_score[which(Polyphen2_HVAR_score == ".")] = 1
+   Polyphen2_HVAR_score = as.numeric(Polyphen2_HVAR_score)
+
+   
+   Polyphen2_HDIV_score = snp.table.exonic$Polyphen2_HDIV_score
+   Polyphen2_HDIV_score[which(Polyphen2_HDIV_score == ".")] = 1
+   Polyphen2_HDIV_score = as.numeric(Polyphen2_HDIV_score)
+ 
+ # The distribution of CADD scores
+   CADD_score = snp.table.exonic$CADD_pred
+   CADD_score[which(CADD_score == ".")] = 99
+   CADD_score = as.numeric(CADD_score)
+
+# Annotation with SIFT
+  length(which(SIFT_score >= 0.05))
+  table(snp.table.exonic$SIFT_pred)
+  length(intersect(which(SIFT_score >= 0.05), which(snp.table.exonic$SIFT_pred == "T")))
+  
+  pdf("./image/sfig1/2_sift.pdf", height = 4, width = 5)
+  plot(density(SIFT_score[which(snp.table.exonic$SIFT_pred == "D" )]),
+       main = "SIFT_score", xlab = "", ylab = "Density",
+       xlim = c(0, 1), col="red")+
+  lines(density(SIFT_score[which(snp.table.exonic$SIFT_pred == "T" )]), xlim = c(0, 1), col="blue")+
+  abline(v = 0.05, col="red")
+  dev.off()
+   
+# Annotation with polyphen2
+  length(which(Polyphen2_HVAR_score <= 0.5))
+  table(snp.table.exonic$Polyphen2_HVAR_pred)
+  length(intersect(which(Polyphen2_HVAR_score <= 0.5), which(snp.table.exonic$Polyphen2_HVAR_pred == "B" )))
+  pdf("./image/sfig1/2_Polyphen2_HVAR.pdf", height = 4, width = 5)
+  plot(density(Polyphen2_HVAR_score[which(snp.table.exonic$Polyphen2_HVAR_pred == "B" )]), 
+       main = "Polyphen2_HVAR_score", xlab = "", ylab = "Density",
+       xlim = c(0, 1), col="blue")+
+  lines(density(Polyphen2_HVAR_score[which(snp.table.exonic$Polyphen2_HVAR_pred == "D" )]), xlim = c(0, 1), col="red")+
+  lines(density(Polyphen2_HVAR_score[which(snp.table.exonic$Polyphen2_HVAR_pred == "P" )]), xlim = c(0, 1), col="orange")+
+  abline(v = 0.435, col="red")
+  dev.off()
+
+  length(which(Polyphen2_HDIV_score <= 0.5))
+  table(snp.table.exonic$Polyphen2_HDIV_pred)
+  length(intersect(which(Polyphen2_HDIV_score <= 0.5), which(snp.table.exonic$Polyphen2_HDIV_pred == "B" )))
+  pdf("./image/sfig1/2_Polyphen2_HDIV.pdf", height = 4, width = 5)
+  plot(density(Polyphen2_HDIV_score[which(snp.table.exonic$Polyphen2_HDIV_pred == "B" )]), 
+       main = "Polyphen2_HDIV_score", xlab = "", ylab = "Density",
+       xlim = c(0, 1), col="blue")+
+  lines(density(Polyphen2_HDIV_score[which(snp.table.exonic$Polyphen2_HDIV_pred == "D" )]), xlim = c(0, 1), col="red")+
+  lines(density(Polyphen2_HDIV_score[which(snp.table.exonic$Polyphen2_HDIV_pred == "P" )]), xlim = c(0, 1), col="orange")+
+  abline(v = 0.445, col="red")
+  dev.off()
+  
+# Annotation  MT2
+  write.csv(table(snp.table.exonic$MutationTaster_pred), file = "./image/sfig1/2_mt.csv") 
+  table(snp.table.exonic$MutationTaster_pred)
+  MutationTaster_score = snp.table.exonic$MutationTaster_score[which(snp.table.exonic$MutationTaster_score != ".")]
+  MutationTaster_score = as.numeric(MutationTaster_score)
+  MutationTaster_pred = snp.table.exonic$MutationTaster_pred[which(snp.table.exonic$MutationTaster_pred != ".")]
+  plot(density(MutationTaster_score[which(MutationTaster_pred == "D" )]),
+       main = "MutationTaster_score", xlab = "", ylab = "Density",
+       xlim = c(0, 1), col="red")+
+  lines(density(MutationTaster_score[which(MutationTaster_pred == "T" )]), xlim = c(0, 1), col="blue")
+  
+# Annotation CADD
+  CADD_score = as.numeric(snp.table.exonic$CADD_score[-which(snp.table.exonic$CADD_score == ".")])
+  pdf("./image/sfig1/2_CADD.pdf", height = 4, width = 5)
+  plot(density(CADD_score[which(CADD_score>=5)]), 
+       main = "CADD_score", xlab = "", ylab = "Density",
+       xlim = c(-5, 20), col="blue") + 
+  lines(density(CADD_score[which(CADD_score<=5)]), xlim = c(-5, 20), col="red") +
+  abline(v = 5, col="red")
+  dev.off()
+```
+
+```{r}
+# Convert to binary: deleterious, 0; benign, 1
+  snp.table.exonic$SIFT_final = 0
+  snp.table.exonic$SIFT_final[which(snp.table.exonic$SIFT_pred == "T")] = 1
+  
+  snp.table.exonic$PP2_HVAR_final = 0
+  snp.table.exonic$PP2_HVAR_final[which(snp.table.exonic$Polyphen2_HVAR_pred == "B")] = 1
+  
+  snp.table.exonic$PP2_HDIV_final = 0
+  snp.table.exonic$PP2_HDIV_final[which(snp.table.exonic$Polyphen2_HDIV_pred == "B")] = 1
+  
+  snp.table.exonic$MT_final = 0
+  snp.table.exonic$MT_final[which(snp.table.exonic$MutationTaster_pred == "N" |
+                                  snp.table.exonic$MutationTaster_pred == "P" )] = 1
+  
+  snp.table.exonic$CADD_final = 0
+  CADD_score = snp.table.exonic$CADD_pred
+  CADD_score[which(CADD_score == ".")] = 1
+  CADD_score = as.numeric(CADD_score)
+  snp.table.exonic$CADD_final[which(CADD_score>5)] = 1
+  
+# Convert to binary 1, deleterious; 0, benign
+  snp.table.exonic$Final_pred =
+    snp.table.exonic$SIFT_final + snp.table.exonic$PP2_HVAR_final + snp.table.exonic$PP2_HDIV_final + snp.table.exonic$MT_final + snp.table.exonic$CADD_final
+  
+  df = data.frame(sort(table(snp.table.exonic$Final_pred)))
+  df$Var1 = factor(df$Var1, 0:5)
+  table(snp.table.exonic$Final_pred)
+  
+  p =
+    ggplot(df, aes(x = Var1, y = Freq)) +
+    geom_bar(stat = "identity", fill = "steelblue") +
+    xlab("") +
+    ylab("Counts") +
+    ggtitle("") + theme_classic() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  p
+  ggsave(plot = p, filename = "./image/sfig1/3_consensus_benign.pdf", width = 5, height = 3)
+```
+
+```{r}
+  snp.table.final = snp.table.exonic[-which(snp.table.exonic$Final_pred >=3),]
+  table(snp.table.final$ExonicFunc)
+  
+  df = data.frame(sort(table(snp.table.final$ExonicFunc), decreasing = T))
+  p =
+    ggplot(df, aes(x = Var1, y = Freq)) +
+    geom_bar(stat = "identity", fill = "steelblue") +
+    xlab("") +
+    ylab("Counts") +
+    ggtitle("") + theme_classic() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  p
+  ggsave(plot = p, filename = "./image/sfig1/4_final_deleterious.pdf", width = 5, height = 3)
+  
+  saveRDS(snp.table.final, "./data_analysis/3_wes_allsamples_final.rds")
+```
+
+
+
+
+
+

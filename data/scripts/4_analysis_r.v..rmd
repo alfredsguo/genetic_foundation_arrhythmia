@@ -1,0 +1,204 @@
+---
+title: "SNPs data preprocessing"
+author: "Shuai, Yi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r include=FALSE}
+# Add required packages
+  library(ggplot2)
+  library(tidyverse)
+  library(hrbrthemes)
+  library("stringr")
+  library(ComplexHeatmap)
+  library(vcfR)
+  library("readxl")
+```
+
+#-------------------------------------
+# 1. Identify the r.v. genes
+#-------------------------------------
+
+```{r}
+  clin_info = read_xlsx("./0_arrhythmia_clinical_info_0815.xlsx")
+  data.final = readRDS(file = "./data_analysis/4_wes_allsamples_final.rds")
+  saveRDS(data.final, file = "./data_analysis/4_wes_allsamples_final.rds")
+  # I find five genes presented strange name, correct it one by one.
+  data.final[which(data.final$GeneName == "43161"),]
+  data.final$GeneName[which(data.final$GeneName == "43161")] = "MARC2"
+  data.final[which(data.final$GeneName == "43163"),]
+  data.final$GeneName[which(data.final$GeneName == "43163")] = "MARCH4"
+  data.final[which(data.final$GeneName == "43167"),]
+  data.final$GeneName[which(data.final$GeneName == "43167")] = "MARCH8"
+  data.final[which(data.final$GeneName == "43169"),]
+  data.final$GeneName[which(data.final$GeneName == "43169")] = "MARCH10"
+  data.final[which(data.final$GeneName == "43355"),]
+  data.final$GeneName[which(data.final$GeneName == "43355")] = "SEPT12"
+```
+
+```{r}
+# Prepare the input data for High impact SNVs
+  sample_gene_list = unique(paste0(data.final$Patient_id, "_", data.final$GeneName))
+  sort(table(sapply(strsplit(sample_gene_list, split = "_"), '[', 2)), decreasing = T)
+  data = table(sapply(strsplit(sample_gene_list, split = "_"), '[', 2))
+  
+  pdf("./image/sfig2/1_histogram_of_rv.pdf", width = 7, height = 5)
+  hist(data, breaks = seq(0, max(data) + 1, by = 1), col = "steelblue",
+       xlab = "Recurrency counts", ylab = "Number of genes", main = "Recurrent variants in arrhythmia cohorts")
+  abline(v=15, col="red")
+  dev.off()
+  
+  recurrent_vars = names(which(table(sapply(strsplit(sample_gene_list, split = "_"), '[', 2)) >= 15))
+  save(recurrent_vars, file = "./data_analysis/5_recur_132genes.RData")
+```
+
+```{r}
+  acmg.rv = NULL
+  for (g in recurrent_vars) {
+    temp = data.final[which(data.final$GeneName == g),]
+    acmg.rv = rbind(acmg.rv, temp)
+  }
+  saveRDS(acmg.rv, "./data_analysis/5_recur_132genes_rvtable.rds")
+  write.csv(acmg.rv, "./data_analysis/5_recur_132genes_rvtable.csv")
+  
+  chr_lenght = c(247249719, 242951149, 199501827, 191273063, 180857866, 170899992, 158821424, 146274826, 
+                 140273252, 135374737, 134452384, 132349534, 114142980, 106368585, 100338915, 88827254, 
+                 78774742, 76117153, 63811651, 62435964, 46944323, 49691432, 154913754, 57772954) #
+  chr_lenght_rl = chr_lenght/sum(chr_lenght) * 100
+  data = data.frame(snps_counts = table(acmg.rv$CHROM) )
+  colnames(data) = c("Chr","variant_counts")
+  data$Chr = paste0("chr",data$Chr)
+  data = rbind(data, c("chrX", 0))
+  data$variant_counts = as.numeric(data$variant_counts)  
+  row.names(data) = data$Chr
+
+  data = data[c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9",
+                                 "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17",
+                                 "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"),]
+  data$Chr = factor( data$Chr, c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9",
+                                 "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17",
+                                 "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"))
+  data$snps_adj = data$variant_counts/chr_lenght_rl
+  
+  
+  p <- ggplot(data, aes(x = Chr, y = snps_adj)) +
+    geom_bar(stat='identity',  fill="steelblue" , width=0.75) +
+    ggtitle("SNPs frequencies per Chr adjusted by length") +
+    theme_classic() +
+    theme(
+      plot.title = element_text(size=15),
+      axis.text.x = element_text(angle = 45, vjust = 0.5)
+    ) +
+    geom_hline(yintercept = mean(data$snps_adj), linetype="dotted", color = "red", size=1)
+
+  p
+  ggsave(plot = p, filename = "./image/fig2b_vars_per_unit_chr.pdf", dpi = 300, width = 7, height = 4)
+```
+
+#----------------------------------------------------
+# 2. The signature of recurrent r.v. genes
+#----------------------------------------------------
+
+```{r fig.height=3, fig.width=10}
+  load("./data_analysis/5_recur_132genes.RData")
+  write.csv(recurrent_vars, file = "./image/fig2_recur_132genes.csv")
+  library(clusterProfiler)
+  library(DOSE)
+  library("org.Hs.eg.db")  
+  ego <- enrichGO(gene          = recurrent_vars,
+                  keyType       = 'SYMBOL',
+                  universe      = unique(data.final$GeneName),
+                  OrgDb         = org.Hs.eg.db,
+                  ont           = "ALL",
+                  pAdjustMethod = "none", 
+                  pvalueCutoff  = 0.05,
+                  readable      = TRUE)
+  save(ego, file = "./data_analysis/6_recur_132genes_enrichGO.RData")
+```
+
+```{r fig.height=3, fig.width=10}
+# GO Plot
+  load(file = "./data_analysis/6_recur_132genes_enrichGO.RData")
+  y = as.data.frame(ego)
+  y = y[!duplicated(y$geneID), ]
+  write.csv(y, file = "./image/fig2_recur_132genes_enrichGO.csv")
+  # BP
+  enrichment_plot <- y[which(y$ONTOLOGY == "BP"),] %>% 
+    arrange(p.adjust) %>%
+    mutate(Description = fct_reorder(Description, p.adjust, .desc = T))
+  p =
+  ggplot(enrichment_plot, aes(x = Description, y = -log10(p.adjust), fill = p.adjust)) +
+    geom_bar(stat = "identity") +
+    coord_flip() +
+    labs(x = "", y = "-log10(Adjusted P-value)", fill = "Adjusted P-value") +
+    theme_classic() +
+    scale_fill_gradient(low = "red", high = "blue")
+  p
+  pdf("./image/fig2c_gsea_recur_genes1.pdf", width = 10, height = 3)
+  p
+  dev.off()
+  # CC
+  enrichment_plot <- y[which(y$ONTOLOGY == "CC"),] %>% 
+    arrange(p.adjust) %>%
+    mutate(Description = fct_reorder(Description, p.adjust, .desc = T))
+  
+  p =
+  ggplot(enrichment_plot, aes(x = Description, y = -log10(p.adjust), fill = p.adjust)) +
+    geom_bar(stat = "identity") +
+    coord_flip() +
+    labs(x = "", y = "-log10(Adjusted P-value)", fill = "Adjusted P-value") +
+    theme_classic() +
+    scale_fill_gradient(low = "red", high = "blue")
+  p
+  pdf("./image/fig2c_gsea_recur_genes2.pdf", width = 10, height = 3)
+  p
+  dev.off()  
+```
+
+#----------------------------------------------------
+# 3. The signature of recurrent r.v. genes
+#----------------------------------------------------
+
+
+```{r fig.width=8, fig.height=20}
+# oncoprint plot
+  mat = matrix(data = "",nrow = length(recurrent_vars), ncol = 50)
+  colnames(mat) = unique(data.final$Patient_id)
+  rownames(mat) = recurrent_vars
+  for (i in recurrent_vars) {
+    for (j in unique(data.final$Patient_id)) {
+      temp_id = which(data.final$GeneName == i & data.final$Patient_id == j)
+      if (!identical(temp_id, integer(0))) {
+        temp = data.final[temp_id,]
+        mat[i,j] = paste(temp$Annotation, collapse = ";")
+      }
+    }
+  }
+
+  col = c(missense_SNV = "#69b3a2", nonsense_SNV = "#E21818",
+          frameshift_indel = "#FFDD83",
+          stoploss = "#8D7B68", splicing = "#071952")
+
+  # p =
+    oncoPrint(mat, alter_fun_is_vectorized = T,get_type = function(x) strsplit(x, ";")[[1]],
+                alter_fun = list(
+                    nonsense_SNV =  function(x, y, w, h) {grid.rect(x, y, w-unit(0.5, "mm"), h-unit(0.5, "mm"),
+                        gp = gpar(fill = col["nonsense_SNV"], col = NA))},
+                    stoploss = function(x, y, w, h) {grid.rect(x, y, w-unit(0.5, "mm"), h-unit(0.5, "mm"),
+                        gp = gpar(fill = col["stoploss"], col = NA))},
+                    frameshift_indel = function(x, y, w, h) {grid.rect(x, y, w-unit(0.5, "mm"), h*0.5,
+                        gp = gpar(fill = col["frameshift_indel"], col = NA))},
+                    missense_SNV =  function(x, y, w, h) {grid.rect(x, y, w-unit(0.5, "mm"), h*0.3, 
+                        gp = gpar(fill = col["missense_SNV"], col = NA))}
+                    ),
+                col = col)
+  
+
+  
+  # p
+  pdf(file = "./image/fig2a_snps_landscape.pdf", width = 8, height = 20)
+  p
+  dev.off()
+```
+

@@ -1,0 +1,241 @@
+---
+title: "SNPs data preprocessing"
+author: "Shuai, Yi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r include=FALSE}
+# Add required packages
+  library(ggplot2)
+  library(tidyverse)
+  library(hrbrthemes)
+  library("stringr")
+  library(ComplexHeatmap)
+  library(vcfR)
+  library("readxl")
+  library(RIdeogram)
+  library(karyoploteR)
+  # BiocManager::install("karyoploteR")
+```
+
+```{r fig.height=2, fig.width=2}
+# Plot the distribution of clinical characterastics
+  clin_info = read_xlsx("./0_arrhythmia_clinical_info_0815.xlsx")
+# 1. Age distribution
+  df = data.frame(values = sort(clin_info$Age,decreasing = T))
+  p =
+    ggplot(df, aes(x = values)) +
+    geom_histogram(binwidth = 0.5, fill = "steelblue", color = "black") +
+    labs(title = "Histogram Plot", x = "Values", y = "Frequency") +
+    xlab("Age") + ylab("Counts") +
+    ggtitle("") + theme_classic()
+  p
+  ggsave(plot = p, filename = "./image/sfig1_clinical/1_distribution_of_age.pdf", width = 5, height = 3)
+  length(which(clin_info$Age <= 20))
+# 2. Gender distribution
+  df = data.frame(sort(table(clin_info$Gender),decreasing = T))
+  p =
+    ggplot(df, aes(x = Var1, y = Freq)) +
+    geom_bar(stat = "identity", fill = "steelblue", color = "black") +
+    xlab("") +
+    ylab("Counts") +
+    ggtitle("") + theme_classic() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  p
+  ggsave(plot = p, filename = "./image/sfig1_clinical/2_distribution_of_gender.pdf", width = 2.5, height = 3)    
+
+# 3. Clinical category
+
+  data <- data.frame(category = c("A1", "A2", "A3", "A4", "A5"), value = c(2, 2, 5,    36, 5))
+
+  # Manually set the colors for each category
+  custom_colors <- c("#E25E3E", "#FF9B50", "#FFBB5C", "#12486B", "#6499E9")
+  
+  # Create a function to calculate label positions
+  calculate_label_position <- function(data) {
+    data$label_pos <- cumsum(data$value) - 0.5 * data$value
+    return(data)
+  }
+  
+  data <- calculate_label_position(data)
+  
+  p = 
+  ggplot(data, aes(x = "", y = value, fill = category)) +
+    geom_bar(stat = "identity") +
+    geom_text(aes(x = 1.25, y = label_pos, label = paste0(category, ": ", value, "%")), size = 4) +
+    geom_segment(aes(xend = 1.1, yend = label_pos, x = 1.05, y = label_pos), lineend = "round") +
+    coord_polar(theta = "y", direction = 1) +
+    theme_void() +
+    scale_fill_manual(values = custom_colors) +
+    labs(title = "Customized Pie Chart") +
+    theme(legend.position = "none")
+  p
+  ggsave(plot = p, filename = "./image/sfig1_clinical/3_piechart_of_clinical.pdf", width = 4, height = 4)
+ 
+```
+
+
+# Fig1A/B - Variants per chromosome
+
+```{r}
+  # data.final2 = data.final[-which(is.na(data.final$ExonicFunc) == TRUE),] 
+  # saveRDS(data.final2, file = "./data_analysis/3_wes_allsamples_final.rds")
+  data.final = readRDS(file = "./data_analysis/3_wes_allsamples_final.rds")
+```
+
+```{r}
+  # unique(data.final$ExonicFunc)
+  unique(sub("^chr", "", data.final$CHROM))
+  data.final$CHROM = sub("^chr", "", data.final$CHROM)
+  data.final$Annotation = data.final$ExonicFunc
+  data.final$Annotation[which(data.final$ExonicFunc == "missense SNV")] = "missense_SNV"
+  data.final$Annotation[which(data.final$ExonicFunc == "stopgain")] = "nonsense_SNV"
+  data.final$Annotation[which(data.final$ExonicFunc == "frameshift deletion" |
+                              data.final$ExonicFunc == "frameshift insertion")] = "frameshift_indel"
+  table(data.final$Annotation)
+  sample_gene_list = unique(paste0(data.final$Patient_id, "_", data.final$GeneName))
+
+# Tutorial data/ reference data
+  data(human_karyotype, package="RIdeogram")
+  data(gene_density, package="RIdeogram")
+  genome <- human_karyotype[c(1,2,3)]
+```
+
+```{r}
+# Type Shape Chr Start End color 
+  recurrent_snv = names(which(table(sapply(strsplit(sample_gene_list, split = "_"), '[', 2)) >= 1 ))
+  data.final$Start = as.numeric(data.final$POS)
+  data.final$End = as.numeric(data.final$POS)
+  rv_gene = NULL
+  for (g in recurrent_snv) {
+    rv_gene <- rbind(rv_gene, data.final[which(data.final$GeneName == g),
+                                         c("Annotation","CHROM","Start","End")])
+  }
+  colnames(rv_gene)[1] = "Type"
+  rv_gene$End = as.integer(rv_gene$Start+1000)
+  # rv_gene$CHROM <- sub("^chr", "", rv_gene$CHROM)
+  rv_gene$Shape = "circle"
+  rv_gene$color <-"69b3a2"
+  colnames(rv_gene)[2] = "Chr"
+  row.names(rv_gene) = NULL
+  rv_gene = rv_gene[,colnames(Random_RNAs_500)]
+  rv_gene$dup = paste0(rv_gene$Type,rv_gene$Chr,rv_gene$Start,rv_gene$End)
+  rv_gene = rv_gene[!duplicated(rv_gene$dup),]
+  rv_gene = rv_gene[,1:6]
+  rv_gene$Value = 1
+  rv_gene$Value[which(rv_gene$Type == "nonsense_SNV")] <-2
+  rv_gene$Value[which(rv_gene$Type == "stoploss")] <-3
+  rv_gene$Value[which(rv_gene$Type == "splicing")] <-4
+  rv_gene$Value[which(rv_gene$Type == "frameshift_indel")] <-5
+  col = c("#69b3a2", "#E21818", "#8D7B68","#071952","#FFDD83")
+  # chr plot
+  ideogram(karyotype = genome,
+           overlaid =  rv_gene[,c(3,4,5,7)],
+           label = NULL,
+           label_type = "line", colorset1 = col)
+```
+
+
+```{r}
+# 1. Prepare the input data 
+  colnames(data.final)[1] = "Chr"
+  chr_lenght = c(247249719, 242951149, 199501827, 191273063, 180857866, 170899992, 158821424, 146274826, 
+                 140273252, 135374737, 134452384, 132349534, 114142980, 106368585, 100338915, 88827254, 
+                 78774742, 76117153, 63811651, 62435964, 46944323, 49691432, 154913754, 57772954) #
+  chr_lenght_rl = chr_lenght/sum(chr_lenght) * 100
+  data = data.frame(snps_counts = table(data.final$Chr) )
+  # data = data[,2]
+  colnames(data) = c("Chr","variant_counts")
+  data$Chr = paste0("chr",data$Chr)
+  row.names(data) = data$Chr
+  data = data[c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9",
+                                 "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17",
+                                 "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"),] #
+  data$Chr = factor( data$Chr, c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9",
+                                 "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17",
+                                 "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"))
+  data$snps_adj = data$variant_counts/chr_lenght_rl
+  
+  
+  p <- ggplot(data, aes(x = Chr, y = snps_adj)) +
+    geom_bar(stat='identity',  fill="steelblue" , width=0.75) +
+    ggtitle("SNPs frequencies per Chr adjusted by length") +
+    theme_classic() +
+    theme(
+      plot.title = element_text(size=15),
+      axis.text.x = element_text(angle = 45, vjust = 0.5)
+    ) +
+    geom_hline(yintercept = mean(data$snps_adj), linetype="dotted", color = "red", size=1)
+
+  p
+
+  ggsave(plot = p, filename = "./image/1_vars_per_unit_chr.pdf", dpi = 300, width = 7, height = 4)
+```
+
+# Fig1C - Variants per sample
+
+```{r fig.height=4, fig.width=14}
+# Add clincial information
+  data = data.frame(snps_counts = table(data.final$Patient_id) )
+  # table(data.final$Patient_id)
+  colnames(data) = c("Sample","variant_counts")
+  row.names(data) = data$Sample
+  data$Sample = as.character(data$Sample)
+  data$Clinical = paste0(clin_info$Category,"_",clin_info$Cardiomyopathy)
+  # identical(as.character(data$Sample), data$Clinical)
+  # table(data$Clinical)
+  data.reorder = NULL
+  for (i in c("General arrhythmia_1", "Atrial arrhythmia_1", "Ventricular arrhythmia_1", "Atrial arrhythmia_0", "Ventricular arrhythmia_0" )) {
+    data.reorder = rbind(data.reorder, data[which(data$Clinical == i),])
+  }
+  data.reorder$Sample = factor(data.reorder$Sample,levels = data.reorder$Sample) #,  fill="steelblue"
+  p <-  ggplot(data.reorder, aes(x = Sample, y = variant_counts, fill = Clinical)) +
+    geom_bar(stat='identity', width=0.75) +
+    ggtitle("SNPs frequencies per Sample") +
+    theme_classic() +
+    theme(
+      plot.title = element_text(size=15),
+      axis.text.x = element_text(angle = 90, vjust = 0.5)
+    ) +
+    geom_hline(yintercept = median(data$variant_counts), linetype="dotted", color = "red", size=1)
+  p
+  
+  
+  ggsave(plot = p, filename = "./image/2_vars_per_sample.pdf", dpi = 300, width = 7, height = 4)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

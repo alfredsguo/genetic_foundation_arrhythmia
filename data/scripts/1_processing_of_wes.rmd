@@ -1,0 +1,1302 @@
+---
+title: "SNPs data preprocessing"
+author: "Shuai, Yi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Add required packages
+  library(tidyverse)
+  library("readxl")
+  library(magrittr)
+```
+
+#---------------------------------------------------------------------
+# 1. I will save all the arrhythmia samples into the rds format
+#---------------------------------------------------------------------
+
+```{r}
+  files.snp = list.files("../processed_wes_data/")
+```
+
+#-------------------------------------------------------------------------
+# 2. I will process the 42 samples with the sample format assign as batch1
+#-------------------------------------------------------------------------
+
+```{r}
+# Initiation the merged final table
+  i = 1
+  data.final = readRDS(file = paste0("./data/",files.snp[i]))
+  data.final$Patient_id = substr(files.snp[i],1,5) 
+  data.final %<>% setNames(replace(names(.), names(.) == "CS_004", "SNV_information"))
+  
+  i = 2
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "CS_006", "SNV_information"))  
+  
+  data.final = rbind(data.final, data.temp)
+```
+
+```{r}
+  i = 3
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "cs021", "SNV_information"))  
+  setdiff(colnames(data.final), colnames(data.temp))
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+  data.final %<>% setNames(replace(names(.), names(.) == "avsnp142", "avsnp_info"))  
+  data.final %<>% setNames(replace(names(.), names(.) == "clinvar_20150330", "clinvar_info"))  
+  data.final %<>% setNames(replace(names(.), names(.) == "1000g2014oct_eas", "1000ginfo_eas"))  
+  data.final %<>% setNames(replace(names(.), names(.) == "1000g2014oct_all", "1000ginfo_all"))
+```
+
+```{r}
+  i = 4
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "CS041", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  setdiff(colnames(data.temp), colnames(data.final))
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 5
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "CS042", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  setdiff(colnames(data.temp), colnames(data.final))
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 6
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "CS043", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  setdiff(colnames(data.temp), colnames(data.final))
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 7
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "CS047", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  setdiff(colnames(data.temp), colnames(data.final))
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 8
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "CS048", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  setdiff(colnames(data.temp), colnames(data.final))
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 9
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS050_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 10
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS051_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 11
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "CS052", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 12
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "CS053", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 13
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_cso54_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 14
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_cso55_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 15
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_cso56_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 16
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_cso57_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 17
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_cso59_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 18
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS061_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 18
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS061_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 25
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_cs079_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 26
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_cs080_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 27
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS081_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 28
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS081_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 29
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS084_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))    
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 30
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS086_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 31
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS087_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 32
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS088_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 33
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS089_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 34
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS090_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 35
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS091_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 36
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS092_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 37
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS093_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 38
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS095_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 39
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS097_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 40
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS099_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 41
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS100_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 42
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS101_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 43
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS104_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 44
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS105_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 45
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS106_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 46
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS107_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 47
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS108_GT:DP:DV", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp147", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "clinvar_20160302", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_eas", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g2015aug_all", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 48
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS119_GT:DP:AD", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "ClinVar", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g_EAS", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g_ALL", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "esp6500si_all", "esp6500siv2_all"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+```
+
+```{r}
+  i = 49
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  data.temp %<>% setNames(replace(names(.), names(.) == "Genotype_CS121_GT:DP:AD", "SNV_information"))  
+  
+  setdiff(colnames(data.final), colnames(data.temp))
+  # data.final[,setdiff(colnames(data.final), colnames(data.temp))]
+  setdiff(colnames(data.temp), colnames(data.final))
+  # data.temp[,setdiff(colnames(data.temp), colnames(data.final))]
+  
+  # Match the version between temp and final
+  data.temp %<>% setNames(replace(names(.), names(.) == "avsnp", "avsnp_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "ClinVar", "clinvar_info"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g_EAS", "1000ginfo_eas"))  
+  data.temp %<>% setNames(replace(names(.), names(.) == "1000g_ALL", "1000ginfo_all"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Disease_ID", "HGMD_ID_Diseasename"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "HGMD_Mutation_URL", "HGMD_mutation"))
+  data.temp %<>% setNames(replace(names(.), names(.) == "esp6500si_all", "esp6500siv2_all"))
+  
+  final.col = intersect(colnames(data.final), colnames(data.temp))
+  
+  data.final = rbind(data.final[,final.col], data.temp[,final.col])
+  length(table(data.final$Patient_id))
+  saveRDS(data.final, file = "./data_analysis/1_wes_batch1_n43.rds")
+```
+
+#------------------------------------------------------------------------
+# 3. I will process the 6 samples with the sample format assign as batch2
+#------------------------------------------------------------------------
+
+```{r}
+# for the sample 19
+  i = 19
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  # files.snp[i]
+  # colnames(data.temp)
+  data.temp2 = data.temp[,c(1:5,16:68)]
+  data.temp2$Patient_id = substr(files.snp[i],1,5)
+  data.final = data.temp2
+# for the rest samples 20-24
+  for (i in 20:24) {
+    data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+    # files.snp[i]
+    # colnames(data.temp)
+    data.temp2 = data.temp[,c(1:5,8:60)]
+    data.temp2$Patient_id = substr(files.snp[i],1,5)
+    data.final = rbind(data.final, data.temp2)  
+  }
+  saveRDS(data.final, file = "./data_analysis/1_wes_batch2_n6.rds")
+```
+
+#-----------------------------------------------------------------------
+# 4. I will process the 1 sample with the sample format assign as batch3
+#-----------------------------------------------------------------------
+
+```{r}
+  i = 50
+  data.temp = readRDS(file = paste0("./data/",files.snp[i]))
+  files.snp[i]
+  colnames(data.temp)
+  data.temp$Patient_id = substr(files.snp[i],1,5)
+  saveRDS(data.temp, file = "./data_analysis/1_wes_batch3_n1.rds")
+```
+
+#-----------------------------------------------------------------------
+# 5. Merge all the three batches
+#-----------------------------------------------------------------------
+
+```{r}
+# Check the feature of batch1
+  data_batch1 = readRDS(file = "./data_analysis/1_wes_batch1_n43.rds")
+  colnames(data_batch1)
+```
+
+```{r}
+# Check the feature of batch2
+  data_batch2 = readRDS(file = "./data_analysis/1_wes_batch2_n6.rds")
+  colnames(data_batch2)
+  data_batch2 = data_batch2[which(c(as.numeric(data_batch2$Start)-as.numeric(data_batch2$End)) == 0),-3] 
+  colnames(data_batch2)
+  
+  colnames(data_batch2)[which(colnames(data_batch2) == "Chr")] = "CHROM"
+  colnames(data_batch2)[which(colnames(data_batch2) == "Start")] = "POS"
+  colnames(data_batch2)[which(colnames(data_batch2) == "Ref")] = "REF"
+  colnames(data_batch2)[which(colnames(data_batch2) == "Alt")] = "ALT"
+  colnames(data_batch2)[which(colnames(data_batch2) == "avsnp147")] = "avsnp_info"
+  colnames(data_batch2)[which(colnames(data_batch2) == "Func.refGene")] = "Func"
+  colnames(data_batch2)[which(colnames(data_batch2) == "Gene.refGene")] = "GeneName"
+  colnames(data_batch2)[which(colnames(data_batch2) == "GeneDetail.refGene")] = "GeneDetail"
+  colnames(data_batch2)[which(colnames(data_batch2) == "ExonicFunc.refGene")] = "ExonicFunc"
+  colnames(data_batch2)[which(colnames(data_batch2) == "AAChange.refGene")] = "AAChange"
+  colnames(data_batch2)[which(colnames(data_batch2) == "1000g2015aug_eas")] = "1000ginfo_eas"
+  # clinvar
+  data_batch2$clinvar_info = paste0("CLINSIG=",data_batch2$CLINSIG,";CLNDBN=",data_batch2$CLNDBN,
+                                        ";CLNACC=",data_batch2$CLNACC,";CLNDSDB=",data_batch2$CLNDSDB,";CLNDSDBIB=",data_batch2$CLNDSDBID)
+  data_batch2$clinvar_info[which(data_batch2$clinvar_info=="CLINSIG=.;CLNDBN=.;CLNACC=.;CLNDSDB=.;CLNDSDBIB=.")] = "."
+  # SIFT
+  data_batch2$SIFT = paste0(data_batch2$SIFT_score,",",data_batch2$SIFT_pred)
+  data_batch2$SIFT[which(data_batch2$SIFT==".,.")] = "."
+  # Polyphen2
+  data_batch2$Polyphen2_HVAR = paste0(data_batch2$Polyphen2_HVAR_score,",",data_batch2$Polyphen2_HVAR_pred)
+  data_batch2$Polyphen2_HDIV = paste0(data_batch2$Polyphen2_HDIV_score,",",data_batch2$Polyphen2_HDIV_pred)
+  data_batch2$Polyphen2_HVAR[which(data_batch2$Polyphen2_HVAR==".,.")] = "."
+  data_batch2$Polyphen2_HDIV[which(data_batch2$Polyphen2_HDIV==".,.")] = "."
+  # MutationTaster
+  data_batch2$MutationTaster = paste0(data_batch2$MutationTaster_score,",",data_batch2$MutationTaster_pred)
+  data_batch2$MutationTaster[which(data_batch2$MutationTaster==".,.")] = "."
+  # CADD
+  data_batch2$CADD = paste0(data_batch2$CADD_raw,",",data_batch2$CADD_phred)
+  data_batch2$CADD[which(data_batch2$CADD==".,.")] = "."
+  
+```
+
+```{r}
+  final.col = intersect(colnames(data_batch1), colnames(data_batch2))
+  data.final = rbind(data_batch1[,final.col], data_batch2[,final.col])
+```
+
+```{r}
+# Check the feature of batch3
+  data_batch3 = readRDS(file = "./data_analysis/1_wes_batch3_n1.rds")
+  data_batch3 = data_batch3[which(c(as.numeric(data_batch3$Start)-as.numeric(data_batch3$End)) == 0),-6] 
+
+  colnames(data_batch3)[which(colnames(data_batch3) == "Chr")] = "CHROM"
+  colnames(data_batch3)[which(colnames(data_batch3) == "Start")] = "POS"
+  colnames(data_batch3)[which(colnames(data_batch3) == "Ref")] = "REF"
+  colnames(data_batch3)[which(colnames(data_batch3) == "Alt")] = "ALT"
+  colnames(data_batch3)[which(colnames(data_batch3) == "avsnp150")] = "avsnp_info"
+  colnames(data_batch3)[which(colnames(data_batch3) == "Func.refGeneWithVer")] = "Func"
+  colnames(data_batch3)[which(colnames(data_batch3) == "Gene.refGeneWithVer")] = "GeneName"
+  colnames(data_batch3)[which(colnames(data_batch3) == "GeneDetail.refGeneWithVer")] = "GeneDetail"
+  colnames(data_batch3)[which(colnames(data_batch3) == "ExonicFunc.refGeneWithVer")] = "ExonicFunc"
+  colnames(data_batch3)[which(colnames(data_batch3) == "AAChange.refGeneWithVer")] = "AAChange"
+  colnames(data_batch3)[which(colnames(data_batch3) == "1000g2015aug_eas")] = "1000ginfo_eas"
+  # clinvar
+  data_batch3$clinvar_info = paste0("CLINSIG=",data_batch3$CLINSIG,";CLNDBN=",data_batch3$CLNDBN,
+                                        ";CLNACC=",data_batch3$CLNACC,";CLNDSDB=",data_batch3$CLNDSDB,";CLNDSDBIB=",data_batch3$CLNDSDBID)
+  data_batch3$clinvar_info[which(data_batch3$clinvar_info=="CLINSIG=.;CLNDBN=.;CLNACC=.;CLNDSDB=.;CLNDSDBIB=.")] = "."
+  # SIFT
+  data_batch3$SIFT = paste0(data_batch3$SIFT_score,",",data_batch3$SIFT_pred)
+  data_batch3$SIFT[which(data_batch3$SIFT==".,.")] = "."
+  # Polyphen2
+  data_batch3$Polyphen2_HVAR = paste0(data_batch3$Polyphen2_HVAR_score,",",data_batch3$Polyphen2_HVAR_pred)
+  data_batch3$Polyphen2_HDIV = paste0(data_batch3$Polyphen2_HDIV_score,",",data_batch3$Polyphen2_HDIV_pred)
+  data_batch3$Polyphen2_HVAR[which(data_batch3$Polyphen2_HVAR==".,.")] = "."
+  data_batch3$Polyphen2_HDIV[which(data_batch3$Polyphen2_HDIV==".,.")] = "."
+  # MutationTaster
+  data_batch3$MutationTaster = paste0(data_batch3$MutationTaster_score,",",data_batch3$MutationTaster_pred)
+  data_batch3$MutationTaster[which(data_batch3$MutationTaster==".,.")] = "."
+  # CADD
+  data_batch3$CADD = paste0(data_batch3$CADD_raw,",",data_batch3$CADD_phred)
+  data_batch3$CADD[which(data_batch3$CADD==".,.")] = "."
+
+```
+
+```{r}
+  final.col = intersect(colnames(data.final), colnames(data_batch3))
+  data.final = rbind(data.final[,final.col], data_batch3[,final.col])
+  saveRDS(data.final, file = "./data_analysis/1_wes_allsamples_n50.rds")
+```
+
+
+#-----------------------------------------------------------------------
+# 5. Merge all the three batches
+#-----------------------------------------------------------------------
+
+```{r}
+  clin_info = read_xlsx("../arrhythmia_clinical_info_1229.xlsx")
+  table(clin_info$Gender)
+  mean(clin_info$Age);sd(clin_info$Age)
+  hist(clin_info$Age)
+  sum(clin_info$Cardiomyopathy)
+  table(clin_info$Age,clin_info$Gender)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
