@@ -17,7 +17,7 @@ output: html_document
 #---------------------------------------------------------------------
 
 ```{r}
-  files.snp = list.files("../processed_wes_data/")
+  files.snp = list.files("../data/processed_wes_data/")
 ```
 
 #-------------------------------------------------------------------------
@@ -1246,19 +1246,22 @@ output: html_document
 
 ```
 
+#-----------------------------------------------------------------------
+# 5. Merge all the three batches
+#-----------------------------------------------------------------------
+
 ```{r}
   final.col = intersect(colnames(data.final), colnames(data_batch3))
   data.final = rbind(data.final[,final.col], data_batch3[,final.col])
   saveRDS(data.final, file = "./data_analysis/1_wes_allsamples_n50.rds")
 ```
 
-
 #-----------------------------------------------------------------------
-# 5. Merge all the three batches
+# 6. read the clinical information
 #-----------------------------------------------------------------------
 
 ```{r}
-  clin_info = read_xlsx("../arrhythmia_clinical_info_1229.xlsx")
+  clin_info = read_xlsx("../data/arrhythmia_clinical_info_1229.xlsx")
   table(clin_info$Gender)
   mean(clin_info$Age);sd(clin_info$Age)
   hist(clin_info$Age)
